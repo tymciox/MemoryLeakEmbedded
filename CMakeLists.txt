@@ -20,6 +20,7 @@ include_directories(${INCLUDE_DIR} ${INCLUDE_FFF})
 add_executable(
     ${CMAKE_PROJECT_NAME}
     src/memory_leak.c
+    src/interface.c
     test/TestProductionCode_main.c
     test/TestProductionCode_Runner.c
     test/TestProductionCode.c

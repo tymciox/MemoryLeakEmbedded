@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -g
 TARGET = example
-SRC_DIR = src/memory_leak.c example.c
+SRC_DIR = src/memory_leak.c src/interface.c example.c
 INC_DIR = src
 
 all: $(TARGET)
