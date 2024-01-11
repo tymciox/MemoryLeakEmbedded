@@ -16,7 +16,7 @@ static void memory_leak_add_info(void *mem_address, unsigned int size, const cha
 {
     memory_leak_node_t *new_mem_node = NULL;
 
-    new_mem_node = (memory_leak_node_t *)malloc(sizeof(memory_leak_node_t));
+    new_mem_node = (memory_leak_node_t *)calloc(1, sizeof(memory_leak_node_t));
     if (new_mem_node == NULL)
         return;
 
@@ -170,19 +170,22 @@ static void memory_leak_print_error(leak_status_t status)
 void memory_leak_print_result(void)
 {
     printf("%s\n", "Memory Leak Summary");
-    printf("%s\n", "-----------------------------------");
+    printf("%s\n", "************************");
 
     for (memory_leak_node_t *leak_info = FirstNodePtr; leak_info != NULL; leak_info = leak_info->next)
     {
         if (leak_info->mem_info.error != 0)
             memory_leak_print_error(leak_info->mem_info.error);
-        printf("address : %p\n", leak_info->mem_info.address);
-        printf("size    : %d bytes\n", leak_info->mem_info.size);
-        printf("file    : %s\n", leak_info->mem_info.file_name);
-        printf("line    : %d\n", leak_info->mem_info.line);
-        printf("%s\n", "-----------------------------------");
+        printf("%d,", leak_info->mem_info.time);
+        printf("%d,", leak_info->mem_info.size);
+        printf("%p,", leak_info->mem_info.address);
+        printf("%s,", leak_info->mem_info.file_name);
+        printf("%d,", leak_info->mem_info.line);
+        printf("%s\n", leak_info->mem_info.thread_name);
     }
 
+    printf("%s\n", "***********************");
+    // #format, : "time,size,address,source_file_name,line_number,thread_name"
     // memory_leak_clear_all();
 }
 

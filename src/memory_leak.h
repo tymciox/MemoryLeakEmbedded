@@ -8,6 +8,7 @@
 #include <stdbool.h>
 
 #define FILE_NAME_LENGTH 25
+#define THREAD_NAME_LENGTH 25
 
 typedef enum
 {
@@ -24,11 +25,13 @@ typedef enum
 
 typedef struct
 {
+    unsigned int time;
     void *address;
     unsigned int size;
     char file_name[FILE_NAME_LENGTH];
     unsigned int line;
     unsigned int error;
+    char thread_name[THREAD_NAME_LENGTH];
 } memory_leak_info_t;
 
 typedef struct memory_leak_node
