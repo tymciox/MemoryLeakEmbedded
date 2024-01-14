@@ -2,17 +2,21 @@
 The library help to find memory leaks in embedded C.
 It stores each unrealeased memory using a linked list.
 
+![Alt text](screen_visualization_heap.png)
+
 ## Contents
-- [How to start](#how-to-start)
+- [Usage](#usage)
 - [How to run example on Windows](#how-to-run-example-on-windows)
 - [How to build unit test](#how-to-build-unit-test)
 
-## How to start
+## Usage
 1. Copy `src/` directory to your project,
 2. Uncomment the flag `#define MEMORY_LEAK_DETECTOR` inside the source file `memory_leak.h`,
 3. Inlcude header file `#include "memory_leak.h"` in your code,
 4. Adjust `src/interface.c` as you need,
-5. While the program is running, you need to call a function: `memory_leak_print_result()`
+5. While the program is running, you need to call a function: `memory_leak_print_result()`,
+6. Copy the result and save it to a .txt file,
+7. [Display your result on a graph and table](https://github.com/tymciox/heap_visualization)
 
 ## How to run an example on Windows
 1. Preconditions, you need:
@@ -39,6 +43,8 @@ Memory Leak Summary
 587875375,130,000001D9232F26D0,example.c,46,Thread 2
 ***********************
 ```
+3. Copy the result and save it to a .txt file. 
+4. [Display your result on a graph and table](https://github.com/tymciox/heap_visualization)
 
 ## How to build unit tests
 1. Preconditions, you need:
