@@ -6,12 +6,15 @@
 
 #include "memory_leak.h"
 
+#define UNUSED_VARIABLE(var) (void)(var);
+
 DEFINE_FFF_GLOBALS;
 
 TEST_GROUP(ProductionCode);
 
 TEST_SETUP(ProductionCode)
 {
+    memory_leak_clear_all();
 }
 
 TEST_TEAR_DOWN(ProductionCode)
@@ -45,7 +48,7 @@ TEST(ProductionCode, DoubleFree)
     free(mem);
     free(mem);
 
-    TEST_ASSERT_TRUE(memory_leak_is_error_occurs(LEAK_DOUBLE_FREE));
+    TEST_ASSERT_TRUE(memory_leak_is_error_occurs(LEAK_FREE_NULL));
 }
 
 TEST(ProductionCode, FreeNULL)

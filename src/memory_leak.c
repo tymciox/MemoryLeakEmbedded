@@ -13,57 +13,71 @@
 
 static memory_interface_t interface = {
     .print = print,
+    .get_thread_name = get_thread_name,
+    .get_time = get_time,
 };
 
 static memory_leak_node_t *FirstNodePtr = NULL;
 
-static void memory_leak_add_info(void *mem_address, unsigned int size, const char *file, unsigned int line, leak_status_t error);
+static void memory_leak_add_info(void *mem_address, const unsigned int time, const unsigned int size, const char *file, const unsigned int line, const char *thread_name, const leak_status_t error);
 static int memory_leak_remove_single_info(void *mem_address);
-static void memory_leak_print_error(leak_status_t status);
+static void memory_leak_print_error(const leak_status_t status);
 
 // replacement of malloc
-void *xmalloc(unsigned int size, const char *file, unsigned int line)
+void *xmalloc(const unsigned int size, const char *file, const unsigned int line)
 {
     void *allocation_ptr = NULL;
+    char thread_name[THREAD_NAME_LENGTH] = {0};
+    unsigned int time = 0;
+
+    interface.get_thread_name(thread_name);
+    interface.get_time(&time);
 
     allocation_ptr = malloc(size);
+
     if (allocation_ptr != NULL)
-        memory_leak_add_info(allocation_ptr, size, file, line, LEAK_OK);
+        memory_leak_add_info(allocation_ptr, time, size, file, line, thread_name, LEAK_OK);
     else
-        memory_leak_add_info(allocation_ptr, size, file, line, LEAK_MALLOC_ERROR);
+        memory_leak_add_info(allocation_ptr, time, size, file, line, thread_name, LEAK_MALLOC_ERROR);
 
     return allocation_ptr;
 }
 
 // replacement of calloc
-void *xcalloc(unsigned int elements, unsigned int size, const char *file, unsigned int line)
+void *xcalloc(const unsigned int elements, const unsigned int size, const char *file, const unsigned int line)
 {
     unsigned int total_size = 0;
-    void *allocation_ptr = calloc(elements, size);
+    char thread_name[THREAD_NAME_LENGTH] = {0};
+    unsigned int time = 0;
+    void *allocation_ptr = NULL;
+
+    allocation_ptr = calloc(elements, size);
     if (allocation_ptr != NULL)
     {
         total_size = elements * size;
-        memory_leak_add_info(allocation_ptr, total_size, file, line, LEAK_OK);
+        memory_leak_add_info(allocation_ptr, time, total_size, file, line, thread_name, LEAK_OK);
     }
     else
-        memory_leak_add_info(allocation_ptr, total_size, file, line, LEAK_MALLOC_ERROR);
+        memory_leak_add_info(allocation_ptr, time, total_size, file, line, thread_name, LEAK_MALLOC_ERROR);
 
     return allocation_ptr;
 }
 
 // replacement of free
-void xfree(void *mem_address, const char *file, unsigned int line)
+void xfree(void *mem_address, const char *file, const unsigned int line)
 {
     leak_status_t status = LEAK_OK;
+    char thread_name[THREAD_NAME_LENGTH] = {0};
+    unsigned int time = 0;
 
     status = memory_leak_remove_single_info(mem_address);
     if (status == LEAK_OK)
         free(mem_address);
     else
-        memory_leak_add_info(mem_address, 0, file, line, status);
+        memory_leak_add_info(mem_address, time, 0, file, line, thread_name, status);
 }
 
-static void memory_leak_add_info(void *mem_address, unsigned int size, const char *file, unsigned int line, leak_status_t error)
+static void memory_leak_add_info(void *mem_address, const unsigned int time, const unsigned int size, const char *file, const unsigned int line, const char *thread_name, const leak_status_t error)
 {
     memory_leak_node_t *new_mem_node = NULL;
 
@@ -73,9 +87,11 @@ static void memory_leak_add_info(void *mem_address, unsigned int size, const cha
 
     /* fill up the structure with all info */
     new_mem_node->mem_info.address = mem_address;
+    new_mem_node->mem_info.time = time;
     new_mem_node->mem_info.size = size;
     strncpy(new_mem_node->mem_info.file_name, file, FILE_NAME_LENGTH);
     new_mem_node->mem_info.line = line;
+    strncpy(new_mem_node->mem_info.thread_name, thread_name, THREAD_NAME_LENGTH);
     new_mem_node->mem_info.error = error;
     new_mem_node->next = NULL;
 
@@ -117,10 +133,11 @@ static int memory_leak_remove_single_info(void *mem_address)
         }
         iter = iter->next;
     }
-    return LEAK_DOUBLE_FREE;
+
+    return LEAK_FREE_NULL;
 }
 
-bool memory_leak_is_error_occurs(leak_status_t status)
+bool memory_leak_is_error_occurs(const leak_status_t status)
 {
     for (memory_leak_node_t *leak_info = FirstNodePtr; leak_info != NULL; leak_info = leak_info->next)
     {
@@ -154,18 +171,16 @@ void memory_leak_clear_all(void)
         free(temp);
         temp = alloc_info;
     }
+    FirstNodePtr = NULL;
 }
 
-static void memory_leak_print_error(leak_status_t status)
+static void memory_leak_print_error(const leak_status_t status)
 {
     interface.print("Warning !!! ERROR: ");
     switch (status)
     {
     case LEAK_MALLOC_ERROR:
         interface.print("LEAK_MALLOC_ERROR\n");
-        break;
-    case LEAK_DOUBLE_FREE:
-        interface.print("LEAK_DOUBLE_FREE\n");
         break;
     case LEAK_FREE_NULL:
         interface.print("LEAK_FREE_NULL\n");

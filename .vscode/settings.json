@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "memory_leak.h": "c"
+        "memory_leak.h": "c",
+        "interface.h": "c"
     },
     "editor.formatOnSave": true
 }

@@ -1,6 +1,6 @@
 
-#ifndef LEAK_DETECTOR_C_H
-#define LEAK_DETECTOR_C_H
+#ifndef MEMORY_LEAK_H
+#define MEMORY_LEAK_H
 
 #define MEMORY_LEAK_DETECTOR
 
@@ -14,7 +14,6 @@ typedef enum
 {
     LEAK_OK,
     LEAK_MALLOC_ERROR,
-    LEAK_DOUBLE_FREE,
     LEAK_FREE_NULL
 } leak_status_t;
 
@@ -40,13 +39,13 @@ typedef struct memory_leak_node
     struct memory_leak_node *next;
 } memory_leak_node_t;
 
-void *xmalloc(unsigned int size, const char *file, unsigned int line);
-void *xcalloc(unsigned int elements, unsigned int size, const char *file, unsigned int line);
-void xfree(void *mem_address, const char *file, unsigned int line);
+void *xmalloc(const unsigned int size, const char *file, const unsigned int line);
+void *xcalloc(const unsigned int elements, const unsigned int size, const char *file, const unsigned int line);
+void xfree(void *mem_address, const char *file, const unsigned int line);
 
 void memory_leak_clear_all(void);
 int memory_leak_get_counter(void);
-bool memory_leak_is_error_occurs(leak_status_t status);
+bool memory_leak_is_error_occurs(const leak_status_t status);
 
 void memory_leak_print_result(void);
 
