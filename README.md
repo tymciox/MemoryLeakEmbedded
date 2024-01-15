@@ -3,6 +3,8 @@ The MemoryLeak library helps identify memory leaks in embedded C programs by tra
 
 MemoryLeak is specifically designed for devices that may not have the capability to run more advanced memory management tools. For example, it can be effectively utilized with semihosting, offering a practical solution for memory leak detection on resource-constrained devices.
 
+MemoryLeak is specifically designed for data collection purposes. To visualize and analyze the collected data, you can utilize the related project [HeapVisualizationEmbedded](https://github.com/tymciox/HeapVisualizationEmbedded).
+
 ![Alt text](screen_visualization_heap.png)
 
 ## Contents
