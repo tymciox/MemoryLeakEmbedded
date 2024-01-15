@@ -1,6 +1,8 @@
 # MemoryLeak library
 The MemoryLeak library helps identify memory leaks in embedded C programs by tracking allocated and unreleased memory using a linked list.
 
+MemoryLeak is specifically designed for devices that may not have the capability to run more advanced memory management tools. For example, it can be effectively utilized with semihosting, offering a practical solution for memory leak detection on resource-constrained devices.
+
 ![Alt text](screen_visualization_heap.png)
 
 ## Contents
