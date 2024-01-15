@@ -1,24 +1,39 @@
 # MemoryLeak library
-The library help to find memory leaks in embedded C.
-It stores each unrealeased memory using a linked list.
+The MemoryLeak library helps identify memory leaks in embedded C programs by tracking allocated and unreleased memory using a linked list.
 
 ![Alt text](screen_visualization_heap.png)
 
 ## Contents
+- [Overview](#overview)
 - [Usage](#usage)
-- [How to run example on Windows](#how-to-run-example-on-windows)
-- [How to build unit test](#how-to-build-unit-test)
+- [How to overwrite interface source file](#how-to-overwrite-interface-source-file)
+- [How to run an example on a Windows](#how-to-run-an-example-on-a-windows)
+- [How to build unit tests](#how-to-build-unit-tests)
+
+## Overview
+The MemoryLeak library enhances memory management by overriding the behavior of standard functions — `malloc`, `calloc`, and `free`. Allocated memory details are recorded within nodes of a linked list. Upon memory release, the associated node is removed from the linked list.
+
+To facilitate memory leak detection, at the end of the program or during specific checkpoints, users can check for memory leaks. There are two ways to obtain information about allocated but unreleased memory: print to console and store in a file.
 
 ## Usage
-1. Copy `src/` directory to your project,
-2. Uncomment the flag `#define MEMORY_LEAK_DETECTOR` inside the source file `memory_leak.h`,
-3. Inlcude header file `#include "memory_leak.h"` in your code,
-4. Adjust `src/interface.c` as you need,
-5. While the program is running, you need to call a function: `memory_leak_print_result()`,
-6. Copy the result and save it to a .txt file,
+1. Clone Git repository and include the `src/` directory in your project's compilation,
+2. If you want to enable or disable, uncomment or comment the flag `#define MEMORY_LEAK_EMBEDDED` inside the source file `memory_leak.h`,
+3. Inlcude the header file `#include "memory_leak.h"` in all of your source files,
+4. Overwrite functions in `src/interface.c` with your own implementation,
+5. While the program is running, you need to call a function: `memory_leak_print_result()` or `memory_leak_write_result_to_a_file()`,
+6. If you used `memory_leak_print_result()` copy the result and save it to a .txt file,
 7. [Display your result on a graph and table](https://github.com/tymciox/HeapVisualizationEmbedded)
 
-## How to run an example on Windows
+## How to overwrite interface source file
+- `print(char *string_info)` - Required only if you print the result, otherwise leave it empty
+
+- `get_thread_name(char *destination_thread_name)` - Optional
+
+- `get_time(unsigned int *destination_time)` - Required, SysTick is recommended
+
+- `open_file(void)`, `close_file(void)`, `write_file(const char *single_info, const unsigned int len)` - Required only if you are writing to a file, otherwise leave it empty
+
+## How to run an example on a Windows
 1. Preconditions, you need:
 - Windows 10/11 system,
 - `make`, 

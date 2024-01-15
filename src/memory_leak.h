@@ -2,9 +2,9 @@
 #ifndef MEMORY_LEAK_H
 #define MEMORY_LEAK_H
 
-#define MEMORY_LEAK_DETECTOR
+#define MEMORY_LEAK_EMBEDDED
 
-#ifdef MEMORY_LEAK_DETECTOR
+#ifdef MEMORY_LEAK_EMBEDDED
 #include <stdbool.h>
 
 #define FILE_NAME_LENGTH 25
@@ -48,7 +48,7 @@ int memory_leak_get_counter(void);
 bool memory_leak_is_error_occurs(const leak_status_t status);
 
 void memory_leak_print_result(void);
-void memory_leak_write_result_to_a_file(void);
+void memory_leak_write_result_to_a_file(const char *filename);
 
 #endif
 

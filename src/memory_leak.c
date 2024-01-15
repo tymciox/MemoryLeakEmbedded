@@ -5,7 +5,7 @@
 #include "memory_leak.h"
 #include "interface.h"
 
-#ifdef MEMORY_LEAK_DETECTOR
+#ifdef MEMORY_LEAK_EMBEDDED
 
 #undef malloc
 #undef calloc
@@ -24,7 +24,7 @@ static memory_leak_node_t *FirstNodePtr = NULL;
 
 static void memory_leak_add_info(void *mem_address, const unsigned int time, const unsigned int size, const char *file, const unsigned int line, const char *thread_name, const leak_status_t error);
 static int memory_leak_remove_single_info(void *mem_address);
-static void memory_leak_print_error(const leak_status_t status);
+static void memory_leak_get_string_error(char *retbuf, const leak_status_t status);
 
 // replacement of malloc
 void *xmalloc(const unsigned int size, const char *file, const unsigned int line)
@@ -177,19 +177,19 @@ void memory_leak_clear_all(void)
     FirstNodePtr = NULL;
 }
 
-static void memory_leak_print_error(const leak_status_t status)
+static void memory_leak_get_string_error(char *retbuf, const leak_status_t status)
 {
-    interface.print("Warning !!! ERROR: ");
+    strcpy(retbuf, "Warning !!! ERROR: ");
     switch (status)
     {
     case LEAK_MALLOC_ERROR:
-        interface.print("LEAK_MALLOC_ERROR\n");
+        strcat(retbuf, "LEAK_MALLOC_ERROR\n");
         break;
     case LEAK_FREE_NULL:
-        interface.print("LEAK_FREE_NULL\n");
+        strcat(retbuf, "LEAK_FREE_NULL\n");
         break;
     default:
-        interface.print("UNKNOW ERROR\n");
+        strcat(retbuf, "UNKNOW ERROR\n");
         break;
     }
 }
@@ -204,7 +204,11 @@ void memory_leak_print_result(void)
     for (memory_leak_node_t *leak_info = FirstNodePtr; leak_info != NULL; leak_info = leak_info->next)
     {
         if (leak_info->mem_info.error != 0)
-            memory_leak_print_error(leak_info->mem_info.error);
+        {
+            memory_leak_get_string_error(single_info, leak_info->mem_info.error);
+            interface.print(single_info);
+            memset(single_info, 0, sizeof(single_info));
+        }
 
         sprintf(single_info, "%d,%d,%p,%s,%d,%s\n",
                 leak_info->mem_info.time, leak_info->mem_info.size,
@@ -219,16 +223,20 @@ void memory_leak_print_result(void)
     interface.print("***********************\n");
 }
 
-void memory_leak_write_result_to_a_file(void)
+void memory_leak_write_result_to_a_file(const char *filename)
 {
     char single_info[50 + FILE_NAME_LENGTH + THREAD_NAME_LENGTH] = {0};
 
-    interface.open();
+    interface.open(filename);
 
     for (memory_leak_node_t *leak_info = FirstNodePtr; leak_info != NULL; leak_info = leak_info->next)
     {
         if (leak_info->mem_info.error != 0)
-            memory_leak_print_error(leak_info->mem_info.error);
+        {
+            memory_leak_get_string_error(single_info, leak_info->mem_info.error);
+            interface.write(single_info, strlen(single_info));
+            memset(single_info, 0, sizeof(single_info));
+        }
 
         sprintf(single_info, "%d,%d,%p,%s,%d,%s\n",
                 leak_info->mem_info.time, leak_info->mem_info.size,
