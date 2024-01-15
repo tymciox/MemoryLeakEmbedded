@@ -15,6 +15,9 @@ static memory_interface_t interface = {
     .print = print,
     .get_thread_name = get_thread_name,
     .get_time = get_time,
+    .open = open_file,
+    .write = write_file,
+    .close = close_file,
 };
 
 static memory_leak_node_t *FirstNodePtr = NULL;
@@ -193,7 +196,7 @@ static void memory_leak_print_error(const leak_status_t status)
 
 void memory_leak_print_result(void)
 {
-    char temp[50 + FILE_NAME_LENGTH + THREAD_NAME_LENGTH] = {0};
+    char single_info[50 + FILE_NAME_LENGTH + THREAD_NAME_LENGTH] = {0};
 
     interface.print("Memory Leak Summary\n");
     interface.print("************************\n");
@@ -203,17 +206,41 @@ void memory_leak_print_result(void)
         if (leak_info->mem_info.error != 0)
             memory_leak_print_error(leak_info->mem_info.error);
 
-        sprintf(temp, "%d,%d,%p,%s,%d,%s\n",
+        sprintf(single_info, "%d,%d,%p,%s,%d,%s\n",
                 leak_info->mem_info.time, leak_info->mem_info.size,
                 leak_info->mem_info.address, leak_info->mem_info.file_name,
                 leak_info->mem_info.line, leak_info->mem_info.thread_name);
-        interface.print(temp);
-        memset(temp, 0, sizeof(temp));
+
+        interface.print(single_info);
+
+        memset(single_info, 0, sizeof(single_info));
     }
 
     interface.print("***********************\n");
+}
 
-    // memory_leak_clear_all();
+void memory_leak_write_result_to_a_file(void)
+{
+    char single_info[50 + FILE_NAME_LENGTH + THREAD_NAME_LENGTH] = {0};
+
+    interface.open();
+
+    for (memory_leak_node_t *leak_info = FirstNodePtr; leak_info != NULL; leak_info = leak_info->next)
+    {
+        if (leak_info->mem_info.error != 0)
+            memory_leak_print_error(leak_info->mem_info.error);
+
+        sprintf(single_info, "%d,%d,%p,%s,%d,%s\n",
+                leak_info->mem_info.time, leak_info->mem_info.size,
+                leak_info->mem_info.address, leak_info->mem_info.file_name,
+                leak_info->mem_info.line, leak_info->mem_info.thread_name);
+
+        interface.write(single_info, strlen(single_info));
+
+        memset(single_info, 0, sizeof(single_info));
+    }
+
+    interface.close();
 }
 
 #endif

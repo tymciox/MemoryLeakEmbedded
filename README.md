@@ -16,7 +16,7 @@ It stores each unrealeased memory using a linked list.
 4. Adjust `src/interface.c` as you need,
 5. While the program is running, you need to call a function: `memory_leak_print_result()`,
 6. Copy the result and save it to a .txt file,
-7. [Display your result on a graph and table](https://github.com/tymciox/heap_visualization)
+7. [Display your result on a graph and table](https://github.com/tymciox/HeapVisualizationEmbedded)
 
 ## How to run an example on Windows
 1. Preconditions, you need:

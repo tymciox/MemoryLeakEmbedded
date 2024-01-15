@@ -48,6 +48,7 @@ int memory_leak_get_counter(void);
 bool memory_leak_is_error_occurs(const leak_status_t status);
 
 void memory_leak_print_result(void);
+void memory_leak_write_result_to_a_file(void);
 
 #endif
 
