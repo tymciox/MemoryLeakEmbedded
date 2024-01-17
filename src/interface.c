@@ -9,7 +9,16 @@
 
 #ifdef MEMORY_LEAK_EMBEDDED
 
-static FILE *file;
+static FILE *file = NULL;
+static HANDLE mutex = NULL;
+
+/**
+ * Required, SysTick is recommended
+ */
+void get_time(unsigned int *destination_time)
+{
+    *destination_time = GetTickCount();
+}
 
 /**
  * Required only if you print the result, otherwise leave it empty
@@ -29,17 +38,35 @@ void get_thread_name(char *destination_thread_name)
 }
 
 /**
- * Required, SysTick is recommended
+ * Required only if you use multiple threads, otherwise leave it empty
  */
-void get_time(unsigned int *destination_time)
+void mutex_create(void)
 {
-    *destination_time = GetTickCount();
+    mutex = CreateMutex(NULL, FALSE, NULL);
+    if (mutex == NULL)
+        print("Error creating mutex.\n");
+}
+
+/**
+ * Required only if you use multiple threads, otherwise leave it empty
+ */
+void mutex_give(void)
+{
+    ReleaseMutex(mutex);
+}
+
+/**
+ * Required only if you use multiple threads, otherwise leave it empty
+ */
+void mutex_take(void)
+{
+    WaitForSingleObject(mutex, INFINITE);
 }
 
 /**
  * Required only if you are writing to a file, otherwise leave it empty
  */
-void open_file(const char *filename)
+void file_open(const char *filename)
 {
     file = fopen(filename, "w");
     if (file == NULL)
@@ -51,7 +78,7 @@ void open_file(const char *filename)
 /**
  * Required only if you are writing to a file, otherwise leave it empty
  */
-void close_file(void)
+void file_close(void)
 {
     fclose(file);
     print("Memory Leak file closed\n");
@@ -60,7 +87,7 @@ void close_file(void)
 /**
  * Required only if you are writing to a file, otherwise leave it empty
  */
-void write_file(const char *single_info, const unsigned int len)
+void file_write(const char *single_info, const unsigned int len)
 {
     fwrite(single_info, sizeof(char), len, file);
     print("Data written to file successfully.\n");

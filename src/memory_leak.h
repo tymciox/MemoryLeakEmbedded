@@ -13,6 +13,7 @@
 typedef enum
 {
     LEAK_OK,
+    LEAK_ERROR,
     LEAK_MALLOC_ERROR,
     LEAK_FREE_NULL
 } leak_status_t;

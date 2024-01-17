@@ -38,8 +38,6 @@ TEST(ProductionCode, TwoMemoryLeak)
     (void)(mem3); // memory leak
     (void)(mem5); // memory leak
 
-    memory_leak_write_result_to_a_file("example1.txt");
-
     TEST_ASSERT_EQUAL_INT(2, memory_leak_get_counter());
 }
 

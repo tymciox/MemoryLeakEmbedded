@@ -15,12 +15,16 @@ static memory_interface_t interface = {
     .print = print,
     .get_thread_name = get_thread_name,
     .get_time = get_time,
-    .open = open_file,
-    .write = write_file,
-    .close = close_file,
+    .mutex_create = mutex_create,
+    .mutex_give = mutex_give,
+    .mutex_take = mutex_take,
+    .open = file_open,
+    .write = file_write,
+    .close = file_close,
 };
 
 static memory_leak_node_t *FirstNodePtr = NULL;
+static int FirstUseLibrary = 1;
 
 static void memory_leak_add_info(void *mem_address, const unsigned int time, const unsigned int size, const char *file, const unsigned int line, const char *thread_name, const leak_status_t error);
 static int memory_leak_remove_single_info(void *mem_address);
@@ -80,9 +84,18 @@ void xfree(void *mem_address, const char *file, const unsigned int line)
         memory_leak_add_info(mem_address, time, 0, file, line, thread_name, status);
 }
 
+static void init_library(void)
+{
+    interface.mutex_create();
+    FirstUseLibrary = 0;
+}
+
 static void memory_leak_add_info(void *mem_address, const unsigned int time, const unsigned int size, const char *file, const unsigned int line, const char *thread_name, const leak_status_t error)
 {
     memory_leak_node_t *new_mem_node = NULL;
+
+    if (FirstUseLibrary == 1)
+        init_library();
 
     new_mem_node = (memory_leak_node_t *)calloc(1, sizeof(memory_leak_node_t));
     if (new_mem_node == NULL)
@@ -98,6 +111,7 @@ static void memory_leak_add_info(void *mem_address, const unsigned int time, con
     new_mem_node->mem_info.error = error;
     new_mem_node->next = NULL;
 
+    interface.mutex_take();
     if (FirstNodePtr == NULL)
     {
         FirstNodePtr = new_mem_node;
@@ -109,19 +123,26 @@ static void memory_leak_add_info(void *mem_address, const unsigned int time, con
             iter = iter->next;
         iter->next = new_mem_node;
     }
+    interface.mutex_give();
 }
 
 static int memory_leak_remove_single_info(void *mem_address)
 {
-    memory_leak_node_t *iter = FirstNodePtr;
+    memory_leak_node_t *iter = NULL;
 
+    interface.mutex_take();
+    iter = FirstNodePtr;
     if (iter == NULL || mem_address == NULL)
+    {
+        interface.mutex_give();
         return LEAK_FREE_NULL;
+    }
 
     if (mem_address == iter->mem_info.address)
     {
         FirstNodePtr = iter->next;
         free(iter);
+        interface.mutex_give();
         return LEAK_OK;
     }
 
@@ -132,10 +153,13 @@ static int memory_leak_remove_single_info(void *mem_address)
             memory_leak_node_t *to_delete = iter->next;
             iter->next = iter->next->next;
             free(to_delete);
+            interface.mutex_give();
             return LEAK_OK;
         }
         iter = iter->next;
     }
+
+    interface.mutex_give();
 
     return LEAK_FREE_NULL;
 }
@@ -165,6 +189,7 @@ void memory_leak_clear_all(void)
     memory_leak_node_t *temp = NULL;
     memory_leak_node_t *alloc_info = NULL;
 
+    interface.mutex_take();
     temp = FirstNodePtr;
     alloc_info = FirstNodePtr;
 
@@ -175,6 +200,7 @@ void memory_leak_clear_all(void)
         temp = alloc_info;
     }
     FirstNodePtr = NULL;
+    interface.mutex_give();
 }
 
 static void memory_leak_get_string_error(char *retbuf, const leak_status_t status)
@@ -201,6 +227,7 @@ void memory_leak_print_result(void)
     interface.print("Memory Leak Summary\n");
     interface.print("************************\n");
 
+    interface.mutex_take();
     for (memory_leak_node_t *leak_info = FirstNodePtr; leak_info != NULL; leak_info = leak_info->next)
     {
         if (leak_info->mem_info.error != 0)
@@ -219,7 +246,7 @@ void memory_leak_print_result(void)
 
         memset(single_info, 0, sizeof(single_info));
     }
-
+    interface.mutex_give();
     interface.print("***********************\n");
 }
 
@@ -229,6 +256,7 @@ void memory_leak_write_result_to_a_file(const char *filename)
 
     interface.open(filename);
 
+    interface.mutex_take();
     for (memory_leak_node_t *leak_info = FirstNodePtr; leak_info != NULL; leak_info = leak_info->next)
     {
         if (leak_info->mem_info.error != 0)
@@ -247,7 +275,7 @@ void memory_leak_write_result_to_a_file(const char *filename)
 
         memset(single_info, 0, sizeof(single_info));
     }
-
+    interface.mutex_give();
     interface.close();
 }
 
